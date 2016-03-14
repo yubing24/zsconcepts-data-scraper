@@ -1,0 +1,73 @@
+apply plugin: 'java'
+apply plugin: "eclipse"
+apply plugin: "jacoco"
+apply plugin: "application"
+//apply plugin: "distribution"
+
+mainClassName = "main.ZscScraper"
+
+sourceCompatibility = 1.7
+version = '0.0.1-dev'
+
+sourceSets {
+        main {
+                java {
+                        srcDir 'src/java'
+                }
+                resources {
+                        srcDir 'src/resources'
+                }
+        }
+}
+
+
+repositories {
+        mavenCentral ()
+        //maven {url "https://jitpack.io"}
+        //jcenter () // for mockito tests
+}
+
+jacoco {
+    toolVersion = "0.7.1.201405082137"
+    reportsDir = file("$buildDir/customJacocoReportDir")
+}
+
+
+dependencies {
+        testCompile "junit:junit:4.+"
+        //compile "com.miglayout:miglayout-swing:5.+"
+        compile "org.jsoup:jsoup:1.8.3"
+}
+
+jacocoTestReport {
+        reports {
+                xml.enabled = true;
+                html.enabled = true;
+        }
+}
+
+jar {
+        manifest {
+                attributes 'Main-Class': 'main.ZscScraper'
+        }
+
+}
+
+//this will generate an executable .jar file. However, user still need to check the property
+task fatJar (type: Jar) {
+        manifest {
+                attributes 'Implementation-Title': "zscscraper",
+                'Implementation-Version': version,
+                'Main-Class': "main.ZscScraper"
+        }
+        exclude 'META-INF/*.DSA'
+        baseName = project.name + "-all"
+        from {configurations.compile.collect {it.isDirectory() ? it : zipTree(it)}}
+        with jar
+}
+task wrapper (type: Wrapper){
+        gradleVersion =  '2.9'
+}
+
+check.dependsOn jacocoTestReport
+
